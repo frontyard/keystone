@@ -1,5 +1,22 @@
 # Keystone
 
+## v0.2.30 / 2014-10-02
+
+* fixed; Do not crash process for schema validation errors, thanks [David Banham](https://github.com/davidbanham)
+
+## v0.2.29 / 2014-09-30
+
+* fixed; localfiles implementation, thanks [Darkin8](https://github.com/Darkin8)
+* fixed; whitespace issues in the Admin UI when in production mode
+* added; proper ascending / descending UI for tracking sort
+* added; sorting UI for tracking date fields
+* added; can toggle display of created / updated dates in list view
+* added; displaying tracked metadata in the Admin UI
+* added; displaying current user in the footer
+* fixed; cross-platform issues moving files into place, thanks [Alan Shaw](https://github.com/alanshaw)
+* fixed; sortOrder type detection, thanks [Darkin8](https://github.com/Darkin8)
+* fixed; use buttons where possible for accessibility
+
 ## v0.2.28 / 2014-09-12
 
 * added; thumbnail for embedly fields, thanks [Pavel Vlasov](https://github.com/freakycue)
