@@ -332,8 +332,9 @@ Keystone.prototype.render = function(req, res, view, ext) {
 	locals.fieldLocals = _.pick(locals, '_', 'moment', 'numeral', 'env', 'js', 'utils', 'user', 'cloudinary');
 	
 	var html = template(_.extend(locals, ext));
-	
-	res.send(html);
+
+    var minifierOptions = this.get('minifier');
+    res.send( minifierOptions ? minify(html, minifierOptions) : html);
 };
 
 /**
