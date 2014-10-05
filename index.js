@@ -7,7 +7,8 @@ var fs = require('fs'),
 	moment = require('moment'),
 	numeral = require('numeral'),
 	cloudinary = require('cloudinary'),
-	utils = require('keystone-utils');
+	utils = require('keystone-utils'),
+    minify = require('html-minifier').minify;
 
 var templateCache = {};
 
