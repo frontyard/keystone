@@ -30,8 +30,7 @@
     "queryfilter": "~0.0.4",
     "range_check": "~0.0.4",
     "semver": "~3.0.1",
-    "underscore": "~1.7.0",
-    "html-minifier": "~0.6.8"
+    "underscore": "~1.7.0"
   },
   "devDependencies": {
     "browserify": "~5.11.2",

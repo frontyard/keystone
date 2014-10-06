@@ -7,8 +7,7 @@ var fs = require('fs'),
 	moment = require('moment'),
 	numeral = require('numeral'),
 	cloudinary = require('cloudinary'),
-	utils = require('keystone-utils'),
-    minify = require('html-minifier').minify;
+	utils = require('keystone-utils');
 
 var templateCache = {};
 
@@ -334,8 +333,7 @@ Keystone.prototype.render = function(req, res, view, ext) {
 	
 	var html = template(_.extend(locals, ext));
 
-    var minifierOptions = this.get('minifier');
-    res.send( minifierOptions ? minify(html, minifierOptions) : html);
+    res.send(html);
 };
 
 /**
