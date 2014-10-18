@@ -280,7 +280,7 @@ jQuery(function($) {
 						});
 					}
 				},
-				formatResult: function(item) { return item.public_id; },
+				formatResult: function(item) {return '<img width="48" src="' + item.url + '"/> ' + item.public_id;},
 				formatSelection: function(item) { return item.public_id; },
 				escapeMarkup: function (m) { return m; } // we do not want to escape markup since we are displaying html in results
 			});
