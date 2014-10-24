@@ -8,6 +8,10 @@ var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
 
 exports = module.exports = function(req, res) {
 
+    if( typeof(req.user.get('%' + req.list.key)) !== 'undefined' && !req.user.get('%' + req.list.key) ) {
+        throw new Error('User ' + req.user._id + ' is missing permission for this list');
+    }
+
 	var filters = req.list.processFilters(req.query.q),
 		queryFilters = req.list.getSearchFilters(req.query.search, filters);
 
