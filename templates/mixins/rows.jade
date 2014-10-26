@@ -9,5 +9,5 @@ mixin row(list, colums, item)
     if sortable
       td.control: a(href=js).control-sort
     each col, i in columns
-      td
+      td(style=list.style && typeof list.style === 'function' ? list.style(list, col, item) : '')
         +column(list, col, item)
