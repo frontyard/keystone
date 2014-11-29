@@ -41,7 +41,7 @@ html
 							li: a(href=signout).signout Sign Out
 					ul.nav.navbar-nav
 						each navSection in nav.sections
-                        	if( typeof(user.get('%' + navSection.lists[0].key)) === 'undefined' || user.get('%' + navSection.lists[0].key) )
+							if( typeof(user.get('%' + navSection.lists[0].key)) === 'undefined' || user.get('%' + navSection.lists[0].key) )
 								li(class=section.key == navSection.key ? 'active' : null): a(href='/keystone/' + navSection.lists[0].path)= navSection.label
 			if section.lists && section.lists.length > 1
 				nav(role='navigation')#section-nav.navbar.navbar-default.navbar-static-top: .container
