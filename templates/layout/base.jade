@@ -65,7 +65,7 @@ html
 				block content
 
 		#footer: .container
-			p Powered by <a href="http://frontyard.co" target="_blank">Frontyard Co.</a> version #{version}.
+			p Version #{version}.
 				if User && user
 					|  Signed in as 
 					a(href='/keystone/' + User.path + '/' + user.id)= User.getDocumentName(user)
