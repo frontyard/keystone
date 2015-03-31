@@ -7,7 +7,8 @@ var fs = require('fs'),
 	moment = require('moment'),
 	numeral = require('numeral'),
 	cloudinary = require('cloudinary'),
-	utils = require('keystone-utils');
+	utils = require('keystone-utils'),
+	prepost = require('./lib/prepost');
 
 var templateCache = {};
 
@@ -31,7 +32,8 @@ var moduleRoot = (function(_rootPath) {
  */
 
 var Keystone = function() {
-	
+	prepost.mixin(this)
+		.register('pre:routes', 'pre:render');
 	this.lists = {};
 	this.paths = {};
 	this._options = {
@@ -39,13 +41,11 @@ var Keystone = function() {
 		'brand': 'Keystone',
 		'compress': true,
 		'headless': false,
-		'logger': 'dev',
+		'logger': ':method :url :status :response-time ms',
 		'auto update': false,
-		'model prefix': null
-	};
-	this._pre = {
-		routes: [],
-		render: []
+		'model prefix': null,
+		'module root': moduleRoot,
+		'frame guard': 'sameorigin'
 	};
 	this._redirects = {};
 	
@@ -96,38 +96,22 @@ var Keystone = function() {
 	}
 	
 	// Attach middleware packages, bound to this instance
-	this.initAPI = require('./lib/middleware/initAPI')(this);
+	this.middleware = {
+		api: require('./lib/middleware/api')(this),
+		cors: require('./lib/middleware/cors')(this)
+	};
 	
 };
 
-_.extend(Keystone.prototype, require('./lib/core/options')(moduleRoot));
-
-
-/**
- * Registers a pre-event handler.
- *
- * Valid events include:
- * - `routes` - calls the function before any routes are matched, after all other middleware
- *
- * @param {String} event
- * @param {Function} function to call
- * @api public
- */
-
-Keystone.prototype.pre = function(event, fn) {
-	if (!this._pre[event]) {
-		throw new Error('keystone.pre() Error: event ' + event + ' does not exist.');
-	}
-	this._pre[event].push(fn);
-	return this;
-};
+_.extend(Keystone.prototype, require('./lib/core/options')());
 
 
 Keystone.prototype.prefixModel = function (key) {
 	var modelPrefix = this.get('model prefix');
 	
-	if (modelPrefix)
+	if (modelPrefix) {
 		key = modelPrefix + '_' + key;
+	}
 	
 	return require('mongoose/lib/utils').toCollectionName(key);
 };
@@ -161,9 +145,10 @@ var keystone = module.exports = exports = new Keystone();
 
 // Expose modules and Classes
 keystone.utils = utils;
+keystone.Keystone = Keystone;
 keystone.content = require('./lib/content');
 keystone.List = require('./lib/list');
-keystone.Field = require('./lib/field');
+keystone.Field = require('./fields/types/Type');
 keystone.Field.Types = require('./lib/fieldTypes');
 keystone.View = require('./lib/view');
 keystone.Email = require('./lib/email');
@@ -187,7 +172,7 @@ keystone.security = {
 
 Keystone.prototype.import = function(dirname) {
 	
-	var initialPath = path.join(moduleRoot, dirname);
+	var initialPath = path.join(this.get('module root'), dirname);
 	
 	var doImport = function(fromPath) {
 		
@@ -202,11 +187,11 @@ Keystone.prototype.import = function(dirname) {
 			if (info.isDirectory()) {
 				imported[name] = doImport(fsPath);
 			} else {
-				// only import .js or .coffee files
-				var parts = name.split('.');
-				var ext = parts.pop();
-				if (ext === 'js' || ext === 'coffee') {
-					imported[parts.join('-')] = require(fsPath);
+				// only import files that we can `require`
+				var ext = path.extname(name);
+				var base = path.basename(name, ext);
+				if (require.extensions[ext]) {
+					imported[base] = require(fsPath);
 				}
 			}
 			

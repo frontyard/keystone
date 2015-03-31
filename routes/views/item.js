@@ -3,13 +3,12 @@ var keystone = require('../../'),
 	async = require('async');
 
 exports = module.exports = function(req, res) {
-
     if( typeof(req.user.get('%' + req.list.key)) !== 'undefined' && !req.user.get('%' + req.list.key) ) {
         throw new Error('User ' + req.user._id + ' is missing permission for this item');
     }
 
-	var itemQuery = req.list.model.findById(req.params.item);
-	
+	var itemQuery = req.list.model.findById(req.params.item).select();
+/*
 	if (req.list.tracking && req.list.tracking.createdBy) {
 		itemQuery.populate(req.list.tracking.createdBy);
 	}
@@ -17,7 +16,7 @@ exports = module.exports = function(req, res) {
 	if (req.list.tracking && req.list.tracking.updatedBy) {
 		itemQuery.populate(req.list.tracking.updatedBy);
 	}
-	
+*/	
 	itemQuery.exec(function(err, item) {
 		
 		if (!item) {
@@ -35,21 +34,22 @@ exports = module.exports = function(req, res) {
 				if (i.isValid) {
 					return _.clone(i);
 				} else {
-				    keystone.console.err('Relationship Configuration Error', 'Relationship: ' + i.path + ' on list: ' + req.list.key + ' links to an invalid list: ' + i.ref);
+					keystone.console.err('Relationship Configuration Error', 'Relationship: ' + i.path + ' on list: ' + req.list.key + ' links to an invalid list: ' + i.ref);
 					return null;
 				}
 			})));
 			
 			var drilldown = {
 				def: req.list.get('drilldown'),
-				data: {},
+				// data: {},
 				items: []
 			};
 			
 			var loadDrilldown = function(cb) {
 				
-				if (!drilldown.def)
+				if (!drilldown.def) {
 					return cb();
+				}
 				
 				// step back through the drilldown list and load in reverse order to support nested relationships
 				// TODO: proper support for nested relationships in drilldown
@@ -59,8 +59,9 @@ exports = module.exports = function(req, res) {
 					
 					var field = req.list.fields[path];
 					
-					if (!field || field.type !== 'relationship')
+					if (!field || field.type !== 'relationship') {
 						throw new Error('Drilldown for ' + req.list.key + ' is invalid: field at path ' + path + ' is not a relationship.');
+					}
 					
 					var refList = field.refList;
 					
@@ -74,9 +75,9 @@ exports = module.exports = function(req, res) {
 							}
 							var more = (results.length === 4) ? results.pop() : false;
 							if (results.length) {
-								drilldown.data[path] = results;
+								// drilldown.data[path] = results;
 								drilldown.items.push({
-									list: refList,
+									list: refList.getOptions(),
 									items: _.map(results, function(i) { return {
 										label: refList.getDocumentName(i),
 										href: '/keystone/' + refList.path + '/' + i.id
@@ -92,11 +93,13 @@ exports = module.exports = function(req, res) {
 						}
 						refList.model.findById(item.get(field.path)).exec(function(err, result) {
 							if (result) {
-								drilldown.data[path] = result;
+								// drilldown.data[path] = result;
 								drilldown.items.push({
-									list: refList,
-									label: refList.getDocumentName(result),
-									href: '/keystone/' + refList.path + '/' + result.id
+									list: refList.getOptions(),
+									items: [{
+										label: refList.getDocumentName(result),
+										href: '/keystone/' + refList.path + '/' + result.id
+									}]
 								});
 							}
 							done();
@@ -136,19 +139,11 @@ exports = module.exports = function(req, res) {
 				}, cb);
 			};
 			
-			var	loadFormFieldTemplates = function(cb){
-				var onlyFields = function(item) { return item.type === 'field'; };
-				var compile = function(item, callback) { item.field.compile('form',callback); };
-				async.eachSeries(req.list.uiElements.filter(onlyFields), compile , cb);
-			};
-			
-			
 			/** Render View */
 			
 			async.parallel([
 				loadDrilldown,
-				loadRelationships,
-				loadFormFieldTemplates
+				loadRelationships
 			], function(err) {
 				
 				// TODO: Handle err
@@ -157,15 +152,17 @@ exports = module.exports = function(req, res) {
 					return rel.items.results.length;
 				});
 				
+				var appName = keystone.get('name') || 'Keystone';
+				
 				keystone.render(req, res, 'item', _.extend(viewLocals, {
 					section: keystone.nav.by.list[req.list.key] || {},
-					title: 'Keystone: ' + req.list.singular + ': ' + req.list.getDocumentName(item),
+					title: appName + ': ' + req.list.singular + ': ' + req.list.getDocumentName(item),
 					page: 'item',
 					list: req.list,
 					item: item,
+					drilldown: drilldown,
 					relationships: relationships,
-					showRelationships: showRelationships,
-					drilldown: drilldown
+					showRelationships: showRelationships
 				}));
 				
 			});
@@ -175,6 +172,7 @@ exports = module.exports = function(req, res) {
 		if (req.method === 'POST' && req.body.action === 'updateItem' && !req.list.get('noedit')) {
 			
 			if (!keystone.security.csrf.validate(req)) {
+				console.error('CSRF failure', req.method, req.body);
 				req.flash('error', 'There was a problem with your request, please try again.');
 				return renderView();
 			}

@@ -276,7 +276,7 @@ jQuery(function($) {
 							callback({
 								id: result.id,
 								text: result.id
-							});							
+							});
 						});
 					}
 				},

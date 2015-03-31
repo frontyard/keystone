@@ -24,11 +24,10 @@ exports = module.exports = function(req, res) {
 	switch (req.params.action) {
 
 		case 'autocomplete':
-
-			var limit = req.query.limit || 10,
+			var limit = req.query.limit || 50,
 				page = req.query.page || 1,
 				skip = limit * (page - 1);
-
+				
 			var filters = req.list.getSearchFilters(req.query.q);
 
 			var count = req.list.model.count(filters),
@@ -37,53 +36,40 @@ exports = module.exports = function(req, res) {
 					.skip(skip)
 					.sort(req.list.defaultSort);
 
-			var doQuery = function() {
-				count.exec(function(err, total) {
-
-					if (err) return sendError('database error', err);
-
-					query.exec(function(err, items) {
-
-						if (err) return sendError('database error', err);
-
-						sendResponse({
-							total: total,
-							items: items.map(function(i) {
-								return {
-									name: req.list.getDocumentName(i, true) || '(' + i.id + ')',
-									id: i.id
-								};
-							})
-						});
-
-					});
-
-				});
-			};
-
 			if (req.query.context === 'relationship') {
-
 				var srcList = keystone.list(req.query.list);
-
 				if (!srcList) return sendError('invalid list provided');
 
 				var field = srcList.fields[req.query.field];
-
-				if (!field || field.type !== 'relationship') return sendError('invalid field provided');
-
-				if (!field.hasFilters) {
-					return doQuery();
-				}
+				if (!field) return sendError('invalid field provided');
 
 				_.each(req.query.filters, function(value, key) {
 					query.where(key).equals(value ? value : null);
 					count.where(key).equals(value ? value : null);
 				});
-				return doQuery();
-
-			} else {
-				return doQuery();
 			}
+			
+			count.exec(function(err, total) {
+
+				if (err) return sendError('database error', err);
+
+				query.exec(function(err, items) {
+
+					if (err) return sendError('database error', err);
+
+					sendResponse({
+						total: total,
+						items: items.map(function(i) {
+							return {
+								name: req.list.getDocumentName(i, false) || '(' + i.id + ')',
+								id: i.id
+							};
+						})
+					});
+
+				});
+
+			});
 
 
 		break;
@@ -98,7 +84,7 @@ exports = module.exports = function(req, res) {
 				switch (req.query.dataset) {
 					case 'simple':
 						return sendResponse({
-							name: req.list.getDocumentName(item, true),
+							name: req.list.getDocumentName(item, false),
 							id: item.id
 						});
 					default:
@@ -170,7 +156,7 @@ exports = module.exports = function(req, res) {
 				} else {
 					return sendResponse({
 						success: true,
-						name: req.list.getDocumentName(item, true),
+						name: req.list.getDocumentName(item, false),
 						id: item.id
 					});
 				}
@@ -190,7 +176,7 @@ exports = module.exports = function(req, res) {
 
 			var id = req.body.id || req.query.id;
 			
-			if (id === req.user.id) {
+			if (req.user && id === req.user.id) {
 				return sendError('You can not delete yourself');
 			}
 			

@@ -9,15 +9,23 @@ block content
 		if nav.flat
 			each list in lists
 				if (!list.get('hidden'))
+					if list.external
+						- path = list.path
+					else
+						- path = '/keystone/' + list.path
 					if( typeof(user.get('%' + list.key)) === 'undefined' || user.get('%' + list.key) )
-						h3: a(href='/keystone/' + list.path)= list.label
+						h3: a(href=path)= list.label
 		else
 			each navSection in nav.sections
 				.nav-section
 					h4= navSection.label
 					ul: each list in navSection.lists
+						if list.external
+							- path = list.path
+						else
+							- path = '/keystone/' + list.path
 						if( typeof(user.get('%' + list.key)) === 'undefined' || user.get('%' + list.key) )
-							li: a(href='/keystone/' + list.path)= list.label
+							li: a(href=path)= list.label
 			if orphanedLists.length
 				.nav-section
 					h4 Other

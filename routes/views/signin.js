@@ -3,13 +3,13 @@ var keystone = require('../../'),
 
 exports = module.exports = function(req, res) {
 
-	var renderView = function() {
+	function renderView() {
 		keystone.render(req, res, 'signin', {
 			submitted: req.body,
 			from: req.query.from,
 			logo: keystone.get('signin logo')
 		});
-	};
+	}
 
 	// If a form was submitted, process the login attempt
 	if (req.method === 'POST') {
@@ -24,7 +24,7 @@ exports = module.exports = function(req, res) {
 			return renderView();
 		}
 
-		var onSuccess = function(user) {
+		var onSuccess = function (user) {
 
 			if (req.query.from && req.query.from.match(/^(?!http|\/\/|javascript).+/)) {
 				res.redirect(req.query.from);
@@ -38,15 +38,14 @@ exports = module.exports = function(req, res) {
 
 		};
 
-		var onFail = function() {
+		var onFail = function () {
 			req.flash('error', 'Sorry, that email and password combo are not valid.');
 			renderView();
 		};
 
 		session.signin(req.body, req, res, onSuccess, onFail);
 
-	}
-	else {
+	} else {
 		renderView();
 	}
 
