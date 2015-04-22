@@ -1,20 +1,33 @@
-var _ = require('underscore'),
-	gulp = require('gulp'),
-	gutil = require('gulp-util'),
-	watch = require('gulp-watch'),
-	browserify = require('browserify'),
-	shimify = require('browserify-shim'),
-	uglify = require('gulp-uglify'),
-	watchify = require('watchify'),
-	reactify = require('reactify'),
-	source = require('vinyl-source-stream'),
-	chalk = require('chalk'),
-	del = require('del'),
-	streamify = require('gulp-streamify');
+var _ = require('underscore');
+var browserify = require('browserify');
+var chalk = require('chalk');
+var del = require('del');
+var git = require('gulp-git');
+var gulp = require('gulp');
+var gutil = require('gulp-util');
+var reactify = require('reactify');
+var shimify = require('browserify-shim');
+var source = require('vinyl-source-stream');
+var streamify = require('gulp-streamify');
+var uglify = require('gulp-uglify');
+var watch = require('gulp-watch');
+var watchify = require('watchify');
 
 /**
  * Build Tasks
  */
+
+gulp.task('build-packages', function() {
+	var packages = require('./admin/packages');
+	
+	var b = browserify();
+	packages.forEach(function(i) { b.require(i); });
+	
+	return b.bundle()
+		.pipe(source('packages.js'))
+		.pipe(streamify(uglify()))
+		.pipe(gulp.dest('./public/js'));
+});
 
 // build scripts with browserify and react / jsx transforms
 gulp.task('build-scripts', function() {
@@ -72,3 +85,30 @@ gulp.task('watch-scripts', function() {
 	return rebundle();
 	
 });
+
+/**
+ * Release Tasks
+ */
+
+gulp.task('publish:tag', function(done) {
+	var pkg = JSON.parse(require('fs').readFileSync('./package.json'));
+	var v = 'v' + pkg.version;
+	var message = 'Release ' + v;
+
+	git.tag(v, message, function (err) {
+		if (err) throw err;
+		git.push('origin', v, function (err) {
+			if (err) throw err;
+			done();
+		});
+	});
+});
+
+gulp.task('publish:npm', function(done) {
+	require('child_process')
+		.spawn('npm', ['publish'], { stdio: 'inherit' })
+		.on('close', done);
+});
+
+gulp.task('release', ['publish:tag', 'publish:npm']);
+

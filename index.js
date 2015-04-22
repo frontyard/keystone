@@ -2,15 +2,8 @@ var fs = require('fs'),
 	path = require('path'),
 	_ = require('underscore'),
 	express = require('express'),
-	async = require('async'),
-	jade = require('jade'),
-	moment = require('moment'),
-	numeral = require('numeral'),
-	cloudinary = require('cloudinary'),
 	utils = require('keystone-utils'),
 	prepost = require('./lib/prepost');
-
-var templateCache = {};
 
 /**
  * Don't use process.cwd() as it breaks module encapsulation
@@ -123,7 +116,6 @@ Keystone.prototype.connect = require('./lib/core/connect');
 Keystone.prototype.start = require('./lib/core/start');
 Keystone.prototype.mount = require('./lib/core/mount');
 Keystone.prototype.routes = require('./lib/core/routes');
-Keystone.prototype.static = require('./lib/core/static');
 Keystone.prototype.render = require('./lib/core/render');
 Keystone.prototype.importer = require('./lib/core/importer');
 Keystone.prototype.createItems = require('./lib/core/createItems');

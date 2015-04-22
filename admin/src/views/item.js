@@ -1,9 +1,9 @@
 var React = require('react');
 var request = require('superagent');
 
-var CreateForm = require('../../components/CreateForm');
-var EditForm = require('../../components/EditForm');
-var Header = require('./Header');
+var CreateForm = require('../components/CreateForm');
+var EditForm = require('../components/EditForm');
+var Header = require('../components/ItemViewHeader');
 
 var View = React.createClass({
 	
@@ -59,6 +59,4 @@ var View = React.createClass({
 	
 });
 
-exports.render = function(id) {
-	React.render(<View itemId={id} />, document.getElementById('item-view'));
-};
+React.render(<View itemId={Keystone.itemId} />, document.getElementById('item-view'));
