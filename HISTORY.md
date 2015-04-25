@@ -1,5 +1,16 @@
 # KeystoneJS Changelog
 
+## v0.3.8 / 2015-04-23
+
+* fixed; worked around a breaking issue with the `bytes` package by downgrading it and including it in the pre-built Admin UI packages bundle
+
+## v0.3.7 / 2015-04-23
+
+* changed; switched from pre-built admin scripts to pre-built browserify packages and on-demand admin UI scripts w/ browserify-middleware
+* fixed; TinyMCE image upload fail due to "Bad response", thanks [Alberto Gasparin](https://github.com/albertogasparin)
+* fixed; case-insensitive user lookup in .session.signin(), thanks [Johnny Estilles](https://github.com/JohnnyEstilles)
+* fixed; Reloading tinyMCE if dependencies matches dependsOn, thanks [Christian Nolte](https://github.com/drlogout)
+
 ## v0.3.6 / 2015-04-14
 
 * fixed; `list.schema.path("field")` would not return the field schema before the List had been registered
