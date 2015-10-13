@@ -3,6 +3,9 @@ var keystone = require('../../'),
 	async = require('async');
 
 exports = module.exports = function(req, res) {
+	if( typeof(req.user.get('%' + req.list.key)) !== 'undefined' && !req.user.get('%' + req.list.key) ) {
+		throw new Error('User ' + req.user._id + ' is missing permission for this item');
+	}
 	
 	var itemQuery = req.list.model.findById(req.params.item);
 	

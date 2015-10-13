@@ -13,7 +13,9 @@ block content
 						- path = list.path
 					else
 						- path = '/keystone/' + list.path
-					h3: a(href=path)= list.label
+
+					if( typeof(user.get('%' + list.key)) === 'undefined' || user.get('%' + list.key) )
+						h3: a(href=path)= list.label
 		else
 			each navSection in nav.sections
 				.nav-section
@@ -23,9 +25,11 @@ block content
 							- path = list.path
 						else
 							- path = '/keystone/' + list.path
-						li: a(href=path)= list.label
+						if( typeof(user.get('%' + list.key)) === 'undefined' || user.get('%' + list.key) )
+							li: a(href=path)= list.label
 			if orphanedLists.length
 				.nav-section
 					h4 Other
 					ul: each list in orphanedLists
-						li: a(href='/keystone/' + list.path)= list.label
+						if( typeof(user.get('%' + list.key)) === 'undefined' || user.get('%' + list.key) )
+							li: a(href='/keystone/' + list.path)= list.label
