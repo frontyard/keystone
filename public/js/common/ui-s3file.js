@@ -32,6 +32,7 @@ jQuery(function($) {
 		
 		$upload.change(function(e) {
 			var fileSelected = $(this).val() ? true : false;
+
 			var renderPlaceholder = function() {
 				// File
 				$filePreview.hide();
@@ -48,6 +49,8 @@ jQuery(function($) {
 			};
 			// Preview
 			if (fileSelected) {
+				$( "input[name='name']" ).val(this.files[0].name);
+				
 				if (window.FileReader) {
 					var files = e.target.files;
 					for (var i = 0, f; f = files[i]; i++) {
@@ -164,7 +167,5 @@ jQuery(function($) {
 			// Redraw
 			$(window).trigger('redraw');
 		});
-		
 	});
-	
 });
