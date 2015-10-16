@@ -49,8 +49,6 @@ jQuery(function($) {
 			};
 			// Preview
 			if (fileSelected) {
-				$( "input[name='name']" ).val(this.files[0].name);
-				
 				if (window.FileReader) {
 					var files = e.target.files;
 					for (var i = 0, f; f = files[i]; i++) {

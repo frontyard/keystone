@@ -43,7 +43,7 @@ block content
 						span.ion-plus-round
 						|  Create #{list.singular}
 			else
-				form(method='post', action='/keystone/' + list.path)
+				form(method='post', action='/keystone/' + list.path, style='float:left;')
 					input(type='hidden', name='action', value='create')
 					input(type='hidden', name=csrf_token_key, value=csrf_token_value)
 					.form
@@ -71,7 +71,11 @@ block content
 							button(type='button', class=(showCreateForm ? 'autoclick' : null)).btn.btn-default.btn-create.btn-create-item
 								span.ion-plus-round
 								|  Create #{list.singular}
-		hr
+
+			- var customListAction = list.get('customListAction')
+			if customListAction
+				a(href='#{customListAction.link}', style='float:left;', class='pull-right', title='Custom', target='_blank').btn.btn-default #{customListAction.label}
+		hr(style='clear:both;margin-top:50px')
 	
 	//-
 	//- List

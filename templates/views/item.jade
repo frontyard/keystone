@@ -48,8 +48,13 @@ block js
 
 block intro
 	.item-toolbar.item-toolbar--header
+		- var breadcrumb = list.get('breadcrumb')
 		ul.item-breadcrumbs
-			li: a(href=js, title='Search #{list.plural}').js-itemsearch-open: span.ion-search
+			li: a(href=js, title='Search #{list.plural}').js-itemsearch-open: span.mr-5.ion-search
+			if breadcrumb
+				li: a(href='#{breadcrumb.link}#{item.id}', title='#{breadcrumb.label}', target='_blank')
+					span.mr-5.ion-eye
+					= breadcrumb.label
 			if drilldown && drilldown.items.length
 				each d in drilldown.items
 					if d.items
