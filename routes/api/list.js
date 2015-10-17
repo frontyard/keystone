@@ -27,7 +27,8 @@ exports = module.exports = function(req, res) {
 
 			var limit = req.query.limit || 10,
 				page = req.query.page || 1,
-				skip = limit * (page - 1);
+				skip = limit * (page - 1),
+				include = req.query.include;
 
 			var filters = req.list.getSearchFilters(req.query.q);
 
@@ -49,10 +50,14 @@ exports = module.exports = function(req, res) {
 						sendResponse({
 							total: total,
 							items: items.map(function(i) {
-								return {
+								var ret = _.extend(i, {
 									name: req.list.getDocumentName(i, true) || '(' + i.id + ')',
 									id: i.id
-								};
+								});
+								//if(include) {
+								//	ret[include]=i[include];
+								//}
+								return ret;
 							})
 						});
 

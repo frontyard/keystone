@@ -1,0 +1,13 @@
+// Preview modal
+mixin popup(customListAction)
+	#custom-action.modal.fade
+		.modal-dialog.modal-lg
+			.modal-content
+				.modal-header
+					button.close(type='button', data-dismiss='modal', aria-label='Close')
+						span(aria-hidden='true') ×
+					h4.modal-title #{customListAction.label}
+				.modal-body
+					iframe(style='border:none;width:100%;height:600px', src='#{customListAction.link}')
+				.modal-footer
+					button.btn.btn-default(type='button', data-dismiss='modal') Close

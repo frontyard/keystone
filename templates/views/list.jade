@@ -2,7 +2,8 @@ extends ../layout/base
 
 include ../mixins/rows
 include ../mixins/pagination
-
+include ../mixins/popup
+	
 block css
 	if list.fieldTypes.markdown
 		link(rel="stylesheet", href="/keystone/js/lib/bootstrap-markdown/css/bootstrap-markdown.css")
@@ -32,6 +33,8 @@ block js
 		Keystone.csrf_query = "!{csrf_query}";
 			
 block content
+	- var customListAction = list.get('customListAction')
+
 	//-
 	//- Create Item
 	//- ------------------------------
@@ -65,17 +68,18 @@ block content
 					
 					.toolbar
 						.toolbar-create
-							button(type='submit').btn.btn-default.btn-create Create
+							button(type='submit').btn.btn-primary.btn-create Create
 							button(type='button').btn.btn-link.btn-cancel.btn-cancel-create-item cancel
 						.toolbar-default
-							button(type='button', class=(showCreateForm ? 'autoclick' : null)).btn.btn-default.btn-create.btn-create-item
+							button(type='button', class=(showCreateForm ? 'autoclick' : null)).btn.btn-primary.btn-create.btn-create-item
 								span.ion-plus-round
 								|  Create #{list.singular}
 
-			- var customListAction = list.get('customListAction')
 			if customListAction
-				a(href='#{customListAction.link}', style='float:left;', class='pull-right', title='Custom', target='_blank').btn.btn-default #{customListAction.label}
-		hr(style='clear:both;margin-top:50px')
+				button.btn.btn-default.pull-right(type='button', data-toggle='modal', data-target='#custom-action')
+					| #{customListAction.label}
+		
+		div(style='clear:both')
 	
 	//-
 	//- List
@@ -468,4 +472,6 @@ block content
 		if items.totalPages > 1
 			.list-pagination
 				+pagination(items)
-	
+
+	if customListAction
+		+popup(customListAction)
