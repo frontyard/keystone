@@ -8,6 +8,6 @@ mixin popup(customListAction)
 						span(aria-hidden='true') ×
 					h4.modal-title #{customListAction.label}
 				.modal-body
-					iframe(style='border:none;width:100%;height:600px', src='#{customListAction.link}')
+					iframe(style='border:none;width:100%;min-height:500px', src='#{customListAction.link}')
 				.modal-footer
 					button.btn.btn-default(type='button', data-dismiss='modal') Close

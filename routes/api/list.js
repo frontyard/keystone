@@ -50,13 +50,13 @@ exports = module.exports = function(req, res) {
 						sendResponse({
 							total: total,
 							items: items.map(function(i) {
-								var ret = _.extend(i, {
+								var ret = {
 									name: req.list.getDocumentName(i, true) || '(' + i.id + ')',
 									id: i.id
-								});
-								//if(include) {
-								//	ret[include]=i[include];
-								//}
+								};
+								if(include) {
+									ret[include] = i[include];
+								}
 								return ret;
 							})
 						});
