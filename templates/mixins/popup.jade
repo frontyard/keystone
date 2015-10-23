@@ -7,7 +7,7 @@ mixin popup(customListAction)
 					button.close(type='button', data-dismiss='modal', aria-label='Close')
 						span(aria-hidden='true') ×
 					h4.modal-title #{customListAction.label}
-				.modal-body
+				.modal-body(style='padding:0 !important')
 					iframe(style='border:none;width:100%;min-height:500px', src='#{customListAction.link}')
 				.modal-footer
 					button.btn.btn-default(type='button', data-dismiss='modal') Close
