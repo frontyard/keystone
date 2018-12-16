@@ -130,11 +130,12 @@ block content
 					else
 						- meta_updatedAt = false
 				if list.tracking.updatedBy
-					- meta_updatedBy = item.get(list.tracking.updatedBy)
-					if meta_updatedBy && (!meta_createdBy || meta_createdBy.id !== meta_updatedBy.id || meta_updatedAt)
-						.item-details-meta-item
-							span.item-details-meta-label= meta_updatedAt ? 'by' : 'Updated by'
-							span.item-details-meta-info: a(href='/keystone/' + User.path + '/' + meta_updatedBy.id)= User.getDocumentName(meta_updatedBy)
+					if typeof item.get === 'function'
+						- meta_updatedBy = item.get(list.tracking.updatedBy)
+						if meta_updatedBy && (!meta_createdBy || meta_createdBy.id !== meta_updatedBy.id || meta_updatedAt)
+							.item-details-meta-item
+								span.item-details-meta-label= meta_updatedAt ? 'by' : 'Updated by'
+								span.item-details-meta-info: a(href='/keystone/' + User.path + '/' + meta_updatedBy.id)= User.getDocumentName(meta_updatedBy)
 		
 		
 		each el in list.uiElements
