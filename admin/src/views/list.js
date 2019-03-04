@@ -1,6 +1,7 @@
 const React = require('react');
 const ReactDOM = require('react-dom');
 const classnames = require('classnames');
+const moment = require('moment');
 
 const CurrentListStore = require('../stores/CurrentListStore');
 const Columns = require('../columns');
@@ -346,6 +347,23 @@ const ListView = React.createClass({
 			'ItemList__row--selected': this.state.checkedItems[itemId],
 			'ItemList__row--manage': this.state.manageMode,
 		});
+		const style = {};
+		// TODO Hack
+		if (this.state.list.key === 'Customer') {
+            const expires = moment(item.fields.expires).valueOf(),
+                now = moment().valueOf(),
+                week = 15 * 24 * 60 * 60 * 1000; // 15 days
+            if (!item.fields.enabled) {
+                style['background-color'] = '#984040';
+            }
+            else if (expires - now < 0) {
+                style['background-color'] = '#e17373';
+            }
+            else if (expires - now < week) {
+                style['background-color'] = '#e1aa73';
+            }
+        }
+
 		var cells = this.state.columns.map((col, i) => {
 			var ColumnType = Columns[col.type] || Columns.__unrecognised__;
 			var linkTo = !i ? `/keystone/${this.state.list.path}/${itemId}` : undefined;
@@ -363,7 +381,7 @@ const ListView = React.createClass({
 				<ListControl key="_delete" onClick={(e) => this.deleteTableItem(item, e)} type="delete" />
 			));
 		}
-		return <tr key={'i' + item.id} onClick={this.state.manageMode ? (e) => this.checkTableItem(item, e) : null} className={rowClassname}>{cells}</tr>;
+		return <tr key={'i' + item.id} style={style} onClick={this.state.manageMode ? (e) => this.checkTableItem(item, e) : null} className={rowClassname}>{cells}</tr>;
 	},
 	renderTable () {
 		if (!this.state.items.results.length) return null;
