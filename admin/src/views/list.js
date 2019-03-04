@@ -349,18 +349,18 @@ const ListView = React.createClass({
 		});
 		const style = {};
 		// TODO Hack
-		if (this.state.list.key === 'Customer') {
+        if (this.state.list.key === 'Customer') {
             const expires = moment(item.fields.expires).valueOf(),
                 now = moment().valueOf(),
                 week = 15 * 24 * 60 * 60 * 1000; // 15 days
             if (!item.fields.enabled) {
-                style['background-color'] = '#984040';
+                style.backgroundColor = '984040';
             }
             else if (expires - now < 0) {
-                style['background-color'] = '#e17373';
+                style.backgroundColor = 'e17373';
             }
             else if (expires - now < week) {
-                style['background-color'] = '#e1aa73';
+                style.backgroundColor = 'e1aa73';
             }
         }
 
