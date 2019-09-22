@@ -354,13 +354,13 @@ const ListView = React.createClass({
                 now = moment().valueOf(),
                 week = 15 * 24 * 60 * 60 * 1000; // 15 days
             if (!item.fields.enabled) {
-                style.backgroundColor = '984040';
+                style.backgroundColor = '#984040';
             }
             else if (expires - now < 0) {
-                style.backgroundColor = 'e17373';
-            }
+                style.backgroundColor = '#e17373';
+            }   
             else if (expires - now < week) {
-                style.backgroundColor = 'e1aa73';
+                style.backgroundColor = '#e1aa73';
             }
         }
 

@@ -1,21 +1,23 @@
-import ColorPicker from '@jedwatson/react-color';
+import { SketchPicker } from 'react-color';
+import { css } from 'glamor';
 import Field from '../Field';
 import React from 'react';
-import { FormInput, InputGroup } from 'elemental';
+import {
+	Button,
+	FormInput,
+	InlineGroup as Group,
+	InlineGroupSection as Section,
+} from '../../../admin/client/App/elemental';
+import transparentSwatch from './transparent-swatch';
+import coloredSwatch from './colored-swatch';
+import theme from '../../../admin/client/theme';
 
-const PICKER_TYPES = ['chrome', 'compact', 'material', 'photoshop', 'sketch', 'slider', 'swatches'];
-const TRANSPARENT_BG =
-`<svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-	<g fill="#CCCCCC">
-		<path d="M0,0 L8,0 L8,8 L0,8 L0,0 Z M8,8 L16,8 L16,16 L8,16 L8,8 Z M0,16 L8,16 L8,24 L0,24 L0,16 Z M16,0 L24,0 L24,8 L16,8 L16,0 Z M16,16 L24,16 L24,24 L16,24 L16,16 Z" />
-	</g>
-</svg>`;
-
-module.exports = Field.create({
+const ColorField = Field.create({
 	displayName: 'ColorField',
-
+	statics: {
+		type: 'Color',
+	},
 	propTypes: {
-		pickerType: React.PropTypes.oneOf(PICKER_TYPES),
 		onChange: React.PropTypes.func,
 		path: React.PropTypes.string,
 		value: React.PropTypes.string,
@@ -26,20 +28,12 @@ module.exports = Field.create({
 			displayColorPicker: false,
 		};
 	},
-
-	getDefaultProps () {
-		return {
-			pickerType: 'sketch'
-		};
-	},
-
 	updateValue (value) {
 		this.props.onChange({
 			path: this.props.path,
-			value: value
+			value: value,
 		});
 	},
-
 	handleInputChange (event) {
 		var newValue = event.target.value;
 		if (/^([0-9A-F]{3}){1,2}$/.test(newValue)) {
@@ -49,56 +43,111 @@ module.exports = Field.create({
 
 		this.updateValue(newValue);
 	},
-
-	handleClick() {
+	handleClick () {
 		this.setState({ displayColorPicker: !this.state.displayColorPicker });
 	},
-
-	handleClose() {
+	handleClose () {
 		this.setState({ displayColorPicker: false });
 	},
-
 	handlePickerChange (color) {
-		var newValue = '#' + color.hex;
+		var newValue = color.hex;
 
 		if (newValue === this.props.value) return;
 
 		this.updateValue(newValue);
 	},
-
 	renderSwatch () {
+		const className = `${css(classes.swatch)} e2e-type-color__swatch`;
+
 		return (this.props.value) ? (
-			<span className="field-type-color__swatch" style={{ backgroundColor: this.props.value }} />
+			<span
+				className={className}
+				style={{ color: this.props.value }}
+				dangerouslySetInnerHTML={{ __html: coloredSwatch }}
+			/>
 		) : (
-			<span className="field-type-color__swatch" dangerouslySetInnerHTML={{ __html: TRANSPARENT_BG }} />
+			<span
+				className={className}
+				dangerouslySetInnerHTML={{ __html: transparentSwatch }}
+			/>
 		);
 	},
-
 	renderField () {
+
+		const { displayColorPicker } = this.state;
+
 		return (
-			<div className="field-type-color__wrapper">
-				<InputGroup>
-					<InputGroup.Section grow>
-						<FormInput ref="field" onChange={this.valueChanged} name={this.props.path} value={this.props.value} autoComplete="off" />
-					</InputGroup.Section>
-					<InputGroup.Section>
-						<button type="button" onClick={this.handleClick} className="FormInput FormSelect field-type-color__button">
-							{this.renderSwatch()}
-						</button>
-					</InputGroup.Section>
-				</InputGroup>
-				<div className="field-type-color__picker">
-					<ColorPicker
-						color={this.props.value}
-						display={this.state.displayColorPicker}
-						onChangeComplete={this.handlePickerChange}
-						onClose={ this.handleClose }
-						position={window.innerWidth > 480 ? 'right' : 'below'}
-						type={this.props.pickerType}
+			<div className="e2e-type-color__wrapper" style={{ position: 'relative' }}>
+				<Group>
+					<Section grow>
+						<FormInput
+							autoComplete="off"
+							name={this.getInputName(this.props.path)}
+							onChange={this.valueChanged}
+							ref="field"
+							value={this.props.value}
 						/>
-				</div>
+					</Section>
+					<Section>
+						<Button onClick={this.handleClick} style={classes.button} data-e2e-type-color__button>
+							{this.renderSwatch()}
+						</Button>
+					</Section>
+				</Group>
+				{displayColorPicker && (
+					<div>
+						<div
+							className={css(classes.blockout)}
+							data-e2e-type-color__blockout
+							onClick={this.handleClose}
+						/>
+						<div className={css(classes.popover)} onClick={e => e.stopPropagation()} data-e2e-type-color__popover>
+							<SketchPicker
+								color={this.props.value}
+								onChangeComplete={this.handlePickerChange}
+								onClose={this.handleClose}
+							/>
+						</div>
+					</div>
+				)}
 			</div>
 		);
-	}
-
+	},
 });
+
+/* eslint quote-props: ["error", "as-needed"] */
+const classes = {
+	button: {
+		background: 'white !important',
+		padding: 4,
+		width: theme.component.height,
+
+		// ':hover': {
+		// 	background: 'white',
+		// },
+	},
+	blockout: {
+		bottom: 0,
+		left: 0,
+		position: 'fixed',
+		right: 0,
+		top: 0,
+		zIndex: 1,
+	},
+	popover: {
+		marginTop: 10,
+		position: 'absolute',
+		left: 0,
+		zIndex: 500,
+	},
+	swatch: {
+		borderRadius: 1,
+		boxShadow: '0 0 0 1px rgba(0,0,0,0.1)',
+		display: 'block',
+		' svg': {
+			display: 'block',
+		},
+	},
+};
+
+module.exports = ColorField;

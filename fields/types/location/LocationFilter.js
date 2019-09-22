@@ -1,71 +1,122 @@
-import _ from 'underscore';
-import classNames from 'classnames';
 import React from 'react';
+import { findDOMNode } from 'react-dom';
 
-import { FormField, FormInput, FormRow, SegmentedControl } from 'elemental';
+import {
+	FormField,
+	FormInput,
+	Grid,
+	SegmentedControl,
+} from '../../../admin/client/App/elemental';
 
-const MODE_OPTIONS = [
-	{ label: 'Exactly',     value: 'exactly' },
-	{ label: 'Contains',    value: 'contains' }
-];
-
-const TOGGLE_OPTIONS = [
+const INVERTED_OPTIONS = [
 	{ label: 'Matches', value: false },
-	{ label: 'Does NOT Match', value: true }
+	{ label: 'Does NOT Match', value: true },
 ];
+
+function getDefaultValue () {
+	return {
+		inverted: INVERTED_OPTIONS[0].value,
+		street: undefined,
+		city: undefined,
+		state: undefined,
+		code: undefined,
+		country: undefined,
+	};
+}
 
 var TextFilter = React.createClass({
-
-	getInitialState () {
+	propTypes: {
+		filter: React.PropTypes.shape({
+			inverted: React.PropTypes.boolean,
+			street: React.PropTypes.string,
+			city: React.PropTypes.string,
+			state: React.PropTypes.string,
+			code: React.PropTypes.string,
+			country: React.PropTypes.string,
+		}),
+	},
+	statics: {
+		getDefaultValue: getDefaultValue,
+	},
+	getDefaultProps () {
 		return {
-			inverted: TOGGLE_OPTIONS[0].value,
-			city: '',
-			state: '',
-			code: '',
-			country: ''
+			filter: getDefaultValue(),
 		};
 	},
-
-	componentDidMount () {
-		// focus the text focusTarget
-		React.findDOMNode(this.refs.focusTarget).focus();
+	updateFilter (key, val) {
+		const update = {};
+		update[key] = val;
+		this.props.onChange(Object.assign(this.props.filter, update));
 	},
-
 	toggleInverted (value) {
-		this.setState({
-			inverted: value
-		});
+		this.updateFilter('inverted', value);
+		findDOMNode(this.refs.focusTarget).focus();
 	},
-
+	updateValue (e) {
+		this.updateFilter(e.target.name, e.target.value);
+	},
 	render () {
-		let { modeLabel, modeValue } = this.state;
+		const { filter } = this.props;
 
 		return (
 			<div>
 				<FormField>
-					<SegmentedControl equalWidthSegments options={TOGGLE_OPTIONS} value={this.state.inverted} onChange={this.toggleInverted} />
+					<SegmentedControl
+						equalWidthSegments
+						onChange={this.toggleInverted}
+						options={INVERTED_OPTIONS}
+						value={filter.inverted}
+					/>
 				</FormField>
 				<FormField>
-					<FormInput ref="focusTarget" placeholder="Address" />
+					<FormInput
+						autoFocus
+						name="street"
+						onChange={this.updateValue}
+						placeholder="Address"
+						ref="focusTarget"
+						value={filter.street}
+					/>
 				</FormField>
-				<FormRow>
-					<FormField width="two-thirds">
-						<FormInput placeholder="City" value={this.state.city} />
-					</FormField>
-					<FormField width="one-third">
-						<FormInput placeholder="State" value={this.state.state} />
-					</FormField>
-					<FormField width="one-third" style={{ marginBottom: 0 }}>
-						<FormInput placeholder="Postcode" value={this.state.code} />
-					</FormField>
-					<FormField width="two-thirds" style={{ marginBottom: 0 }}>
-						<FormInput placeholder="Country" value={this.state.country} />
-					</FormField>
-				</FormRow>
+				<Grid.Row gutter={10}>
+					<Grid.Col xsmall="two-thirds">
+						<FormInput
+							name="city"
+							onChange={this.updateValue}
+							placeholder="City"
+							style={{ marginBottom: '1em' }}
+							value={filter.city}
+						/>
+					</Grid.Col>
+					<Grid.Col xsmall="one-third">
+						<FormInput
+							name="state"
+							onChange={this.updateValue}
+							placeholder="State"
+							style={{ marginBottom: '1em' }}
+							value={filter.state}
+						/>
+					</Grid.Col>
+					<Grid.Col xsmall="one-third" style={{ marginBottom: 0 }}>
+						<FormInput
+							name="code"
+							onChange={this.updateValue}
+							placeholder="Postcode"
+							value={filter.code}
+						/>
+					</Grid.Col>
+					<Grid.Col xsmall="two-thirds" style={{ marginBottom: 0 }}>
+						<FormInput
+							name="country"
+							onChange={this.updateValue}
+							placeholder="Country"
+							value={filter.country}
+						/>
+					</Grid.Col>
+				</Grid.Row>
 			</div>
 		);
-	}
-
+	},
 });
 
 module.exports = TextFilter;

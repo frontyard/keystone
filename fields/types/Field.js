@@ -1,12 +1,18 @@
-import _ from 'underscore';
 import classnames from 'classnames';
 import evalDependsOn from '../utils/evalDependsOn.js';
 import React from 'react';
-import { Button, FormField, FormInput, FormNote } from 'elemental';
+import { findDOMNode } from 'react-dom';
+import { FormField, FormInput, FormNote } from '../../admin/client/App/elemental';
+import blacklist from 'blacklist';
+import CollapsedFieldLabel from '../components/CollapsedFieldLabel';
 
-function validateSpec(spec) {
+function isObject (arg) {
+	return Object.prototype.toString.call(arg) === '[object Object]';
+}
+
+function validateSpec (spec) {
 	if (!spec) spec = {};
-	if (!_.isObject(spec.supports)) {
+	if (!isObject(spec.supports)) {
 		spec.supports = {};
 	}
 	if (!spec.focusTargetRef) {
@@ -21,68 +27,81 @@ var Base = module.exports.Base = {
 	},
 	getDefaultProps () {
 		return {
+			adminPath: Keystone.adminPath,
 			inputProps: {},
 			labelProps: {},
 			valueProps: {},
-			size: 'full'
+			size: 'full',
 		};
+	},
+	getInputName (path) {
+		// This correctly creates the path for field inputs, and supports the
+		// inputNamePrefix prop that is required for nested fields to work
+		return this.props.inputNamePrefix
+			? `${this.props.inputNamePrefix}[${path}]`
+			: path;
 	},
 	valueChanged (event) {
 		this.props.onChange({
 			path: this.props.path,
-			value: event.target.value
+			value: event.target.value,
 		});
 	},
 	shouldCollapse () {
 		return this.props.collapse && !this.props.value;
 	},
 	shouldRenderField () {
-		if (!this.props.noedit) return true;
-		if (this.props.mode === 'create' && this.props.initial) return true;
-		return false;
+		if (this.props.mode === 'create') return true;
+		return !this.props.noedit;
 	},
 	focus () {
 		if (!this.refs[this.spec.focusTargetRef]) return;
-		this.refs[this.spec.focusTargetRef].getDOMNode().focus();
+		findDOMNode(this.refs[this.spec.focusTargetRef]).focus();
 	},
 	renderNote () {
 		if (!this.props.note) return null;
-		return <FormNote note={this.props.note} />;
+
+		return <FormNote html={this.props.note} />;
 	},
 	renderField () {
-		var props = _.extend(this.props.inputProps, {
-			autoComplete: 'off',
-			name: this.props.path,
-			onChange: this.valueChanged,
-			ref: 'focusTarget',
-			value: this.props.value
-		});
-		return <FormInput {...props} />;
+		const { autoFocus, value, inputProps } = this.props;
+		return (
+			<FormInput {...{
+				...inputProps,
+				autoFocus,
+				autoComplete: 'off',
+				name: this.getInputName(this.props.path),
+				onChange: this.valueChanged,
+				ref: 'focusTarget',
+				value,
+			}} />
+		);
 	},
 	renderValue () {
 		return <FormInput noedit>{this.props.value}</FormInput>;
 	},
 	renderUI () {
 		var wrapperClassName = classnames(
-			('field-type-' + this.props.type),
-			this.props.className
+			'field-type-' + this.props.type,
+			this.props.className,
+			{ 'field-monospace': this.props.monospace }
 		);
 		return (
-			<FormField label={this.props.label} className={wrapperClassName} htmlFor={this.props.path}>
+			<FormField htmlFor={this.props.path} label={this.props.label} className={wrapperClassName} cropLabel>
 				<div className={'FormField__inner field-size-' + this.props.size}>
 					{this.shouldRenderField() ? this.renderField() : this.renderValue()}
 				</div>
 				{this.renderNote()}
 			</FormField>
 		);
-	}
+	},
 };
 
 var Mixins = module.exports.Mixins = {
 	Collapse: {
 		componentWillMount () {
 			this.setState({
-				isCollapsed: this.shouldCollapse()
+				isCollapsed: this.shouldCollapse(),
 			});
 		},
 		componentDidUpdate (prevProps, prevState) {
@@ -92,29 +111,33 @@ var Mixins = module.exports.Mixins = {
 		},
 		uncollapse () {
 			this.setState({
-				isCollapsed: false
+				isCollapsed: false,
 			});
 		},
 		renderCollapse () {
 			if (!this.shouldRenderField()) return null;
 			return (
 				<FormField>
-					<Button type="link" className="collapsed-field-label" onClick={this.uncollapse}>+ Add {this.props.label.toLowerCase()}</Button>
+					<CollapsedFieldLabel onClick={this.uncollapse}>+ Add {this.props.label.toLowerCase()}</CollapsedFieldLabel>
 				</FormField>
 			);
-		}
-	}
+		},
+	},
 };
 
-module.exports.create = function(spec) {
+module.exports.create = function (spec) {
 
 	spec = validateSpec(spec);
 
-	var excludeBaseMethods = [];
 	var field = {
 		spec: spec,
 		displayName: spec.displayName,
 		mixins: [Mixins.Collapse],
+		statics: {
+			getDefaultValue: function (field) {
+				return typeof field.defaultValue !== 'undefined' ? field.defaultValue : '';
+			},
+		},
 		render () {
 			if (!evalDependsOn(this.props.dependsOn, this.props.values)) {
 				return null;
@@ -123,21 +146,28 @@ module.exports.create = function(spec) {
 				return this.renderCollapse();
 			}
 			return this.renderUI();
-		}
+		},
 	};
 
+	if (spec.statics) {
+		Object.assign(field.statics, spec.statics);
+	}
+
+	var excludeBaseMethods = {};
 	if (spec.mixins) {
-		_.each(spec.mixins, function(mixin) {
-			_.each(mixin, function(method, name) {
-				if (Base[name]) excludeBaseMethods.push(name);
+		spec.mixins.forEach(function (mixin) {
+			Object.keys(mixin).forEach(function (name) {
+				if (Base[name]) {
+					excludeBaseMethods[name] = true;
+				}
 			});
 		});
 	}
 
-	_.extend(field, _.omit(Base, excludeBaseMethods));
-	_.extend(field, _.omit(spec, 'mixins'));
+	Object.assign(field, blacklist(Base, excludeBaseMethods));
+	Object.assign(field, blacklist(spec, 'mixins', 'statics'));
 
-	if (_.isArray(spec.mixins)) {
+	if (Array.isArray(spec.mixins)) {
 		field.mixins = field.mixins.concat(spec.mixins);
 	}
 
