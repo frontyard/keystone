@@ -39,18 +39,20 @@ const ItemsRow = React.createClass({
 		});
 
 		// <hack>
-        const style = {},
-            expires = item.fields.expires ? moment(item.fields.expires).valueOf() : 0,
-            now = moment().valueOf(),
-            week = 15 * 24 * 60 * 60 * 1000; // 15 days
+        const style = {};
         if (item.fields.enabled === false) {
             style.backgroundColor = '#984040';
         }
-        else if (expires - now < 0) {
-            style.backgroundColor = '#e17373';
-        }
-        else if (expires - now < week) {
-            style.backgroundColor = '#e1aa73';
+        else if (item.fields.expires !== null && typeof item.fields.expires === 'string') {
+            const expires = moment(item.fields.expires).valueOf(),
+                now = moment().valueOf(),
+                week = 15 * 24 * 60 * 60 * 1000; // 15 days
+            if (expires - now < 0) {
+                style.backgroundColor = '#e17373';
+            }
+            else if (expires - now < week) {
+                style.backgroundColor = '#e1aa73';
+            }
         }
         // </hack>
 
