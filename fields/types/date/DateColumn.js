@@ -1,34 +1,40 @@
 import React from 'react';
 import moment from 'moment';
-import ItemsTableCell from '../../../admin/src/components/ItemsTableCell';
-import ItemsTableValue from '../../../admin/src/components/ItemsTableValue';
+import ItemsTableCell from '../../components/ItemsTableCell';
+import ItemsTableValue from '../../components/ItemsTableValue';
 
 var DateColumn = React.createClass({
 	displayName: 'DateColumn',
 	propTypes: {
 		col: React.PropTypes.object,
 		data: React.PropTypes.object,
+		linkTo: React.PropTypes.string,
 	},
-	renderValue () {
-		let value = this.props.data.fields[this.props.col.path];
+	toMoment (value) {
+		if (this.props.col.field.isUTC) {
+			return moment.utc(value);
+		} else {
+			return moment(value);
+		}
+	},
+	getValue () {
+		const value = this.props.data.fields[this.props.col.path];
 		if (!value) return null;
 
-		let format = (this.props.col.path === 'dateTime') ? 'MMMM Do YYYY, h:mm:ss a' : 'MMMM Do YYYY';
-		let formattedValue = moment(value).format(format);
-
-		return (
-			<ItemsTableValue title={formattedValue} field={this.props.col.type}>
-				{formattedValue}
-			</ItemsTableValue>
-		);
+		const format = (this.props.col.type === 'datetime') ? 'MMMM Do YYYY, h:mm:ss a' : 'MMMM Do YYYY';
+		return this.toMoment(value).format(format);
 	},
 	render () {
+		const value = this.getValue();
+		const empty = !value && this.props.linkTo ? true : false;
 		return (
 			<ItemsTableCell>
-				{this.renderValue()}
+				<ItemsTableValue field={this.props.col.type} to={this.props.linkTo} empty={empty}>
+					{value}
+				</ItemsTableValue>
 			</ItemsTableCell>
 		);
-	}
+	},
 });
 
 module.exports = DateColumn;

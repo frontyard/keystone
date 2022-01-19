@@ -1,6 +1,6 @@
 import Field from '../Field';
 import React from 'react';
-import { FormInput } from 'elemental';
+import { FormInput } from '../../../admin/client/App/elemental';
 
 /**
  * TODO:
@@ -13,8 +13,13 @@ require('./lib/bootstrap-markdown');
 
 // Append/remove ### surround the selection
 // Source: https://github.com/toopay/bootstrap-markdown/blob/master/js/bootstrap-markdown.js#L909
-var toggleHeading = function(e, level) {
-	var chunk, cursor, selected = e.getSelection(), content = e.getContent(), pointer, prevChar;
+var toggleHeading = function (e, level) {
+	var chunk;
+	var cursor;
+	var selected = e.getSelection();
+	var content = e.getContent();
+	var pointer;
+	var prevChar;
 
 	if (selected.length === 0) {
 		// Give extra word
@@ -42,7 +47,7 @@ var toggleHeading = function(e, level) {
 	e.setSelection(cursor, cursor + chunk.length);
 };
 
-var renderMarkdown = function(component) {
+var renderMarkdown = function (component) {
 	// dependsOn means that sometimes the component is mounted as a null, so account for that & noop
 	if (!component.refs.markdownTextarea) {
 		return;
@@ -62,50 +67,65 @@ var renderMarkdown = function(component) {
 				name: 'cmdH1',
 				title: 'Heading 1',
 				btnText: 'H1',
-				callback: function(e) {
+				callback: function (e) {
 					toggleHeading(e, '#');
-				}
+				},
 			}, {
 				name: 'cmdH2',
 				title: 'Heading 2',
 				btnText: 'H2',
-				callback: function(e) {
+				callback: function (e) {
 					toggleHeading(e, '##');
-				}
+				},
 			}, {
 				name: 'cmdH3',
 				title: 'Heading 3',
 				btnText: 'H3',
-				callback: function(e) {
+				callback: function (e) {
 					toggleHeading(e, '###');
-				}
+				},
 			}, {
 				name: 'cmdH4',
 				title: 'Heading 4',
 				btnText: 'H4',
-				callback: function(e) {
+				callback: function (e) {
 					toggleHeading(e, '####');
-				}
-			}]
+				},
+			}],
 		}],
 
 		// Insert Header buttons into the toolbar
-		reorderButtonGroups: ['groupFont', 'groupHeaders', 'groupLink', 'groupMisc', 'groupUtil']
+		reorderButtonGroups: ['groupFont', 'groupHeaders', 'groupLink', 'groupMisc', 'groupUtil'],
 	};
 
 	if (component.props.toolbarOptions.hiddenButtons) {
-		var hiddenButtons = ('string' === typeof component.props.toolbarOptions.hiddenButtons) ? component.props.toolbarOptions.hiddenButtons.split(',') : component.props.toolbarOptions.hiddenButtons;
+		var hiddenButtons = (typeof component.props.toolbarOptions.hiddenButtons === 'string')
+			? component.props.toolbarOptions.hiddenButtons.split(',')
+			: component.props.toolbarOptions.hiddenButtons;
+
 		options.hiddenButtons = options.hiddenButtons.concat(hiddenButtons);
 	}
 
-	$(component.refs.markdownTextarea.getDOMNode()).markdown(options);
+	$(component.refs.markdownTextarea).markdown(options);
+};
+
+// Simple escaping of html tags and replacing newlines for displaying the raw markdown string within an html doc
+var escapeHtmlForRender = function (html) {
+	return html
+		.replace(/\&/g, '&amp;')
+		.replace(/\</g, '&lt;')
+		.replace(/\>/g, '&gt;')
+		.replace(/\n/g, '<br />');
 };
 
 module.exports = Field.create({
-
 	displayName: 'MarkdownField',
+	statics: {
+		type: 'Markdown',
+		getDefaultValue: () => ({}),
+	},
 
-	// Override `shouldCollapse` to check the markdown field correctly
+	// override `shouldCollapse` to check the markdown field correctly
 	shouldCollapse () {
 		return this.props.collapse && !this.props.value.md;
 	},
@@ -125,14 +145,41 @@ module.exports = Field.create({
 	},
 
 	renderField () {
-		var styles = {
+		const styles = {
 			padding: 8,
-			height: this.props.height
+			height: this.props.height,
 		};
-		return <textarea name={this.props.paths.md} style={styles} defaultValue={this.props.value.md} ref="markdownTextarea" className="md-editor__input code" />;
+		const defaultValue = (
+			this.props.value !== undefined
+			&& this.props.value.md !== undefined
+		)
+			? this.props.value.md
+			: '';
+
+		return (
+			<textarea
+				className="md-editor__input code"
+				defaultValue={defaultValue}
+				name={this.getInputName(this.props.paths.md)}
+				ref="markdownTextarea"
+				style={styles}
+			/>
+		);
 	},
 
 	renderValue () {
-		return <FormInput multiline noedit dangerouslySetInnerHTML={{ __html: this.props.value.md.replace(/\n/g, '<br />') }} />;
-	}
+		// We want to render the raw markdown string, without parsing it to html
+		// The markdown string *itself* may include html though so we need to escape it first
+		const innerHtml = (this.props.value && this.props.value.md)
+			? escapeHtmlForRender(this.props.value.md)
+			: '';
+
+		return (
+			<FormInput
+				dangerouslySetInnerHTML={{ __html: innerHtml }}
+				multiline
+				noedit
+			/>
+		);
+	},
 });

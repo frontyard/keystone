@@ -1,6 +1,7 @@
 import React from 'react';
-import ItemsTableCell from '../../../admin/src/components/ItemsTableCell';
-import ItemsTableValue from '../../../admin/src/components/ItemsTableValue';
+import ItemsTableCell from '../../components/ItemsTableCell';
+import ItemsTableValue from '../../components/ItemsTableValue';
+import displayName from 'display-name';
 
 var NameColumn = React.createClass({
 	displayName: 'NameColumn',
@@ -12,17 +13,17 @@ var NameColumn = React.createClass({
 	renderValue () {
 		var value = this.props.data.fields[this.props.col.path];
 		if (!value || (!value.first && !value.last)) return '(no name)';
-		return [value.first, value.last].filter(i => i).join(' ');
+		return displayName(value.first, value.last);
 	},
 	render () {
 		return (
 			<ItemsTableCell>
-				<ItemsTableValue href={this.props.linkTo} padded interior field={this.props.col.type}>
+				<ItemsTableValue to={this.props.linkTo} padded interior field={this.props.col.type}>
 					{this.renderValue()}
 				</ItemsTableValue>
 			</ItemsTableCell>
 		);
-	}
+	},
 });
 
 module.exports = NameColumn;

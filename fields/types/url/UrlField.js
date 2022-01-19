@@ -1,11 +1,12 @@
 import React from 'react';
 import Field from '../Field';
-import { Button, FormInput } from 'elemental';
+import { FormInput } from '../../../admin/client/App/elemental';
 
 module.exports = Field.create({
-
 	displayName: 'URLField',
-
+	statics: {
+		type: 'Url',
+	},
 	openValue () {
 		var href = this.props.value;
 		if (!href) return;
@@ -14,25 +15,40 @@ module.exports = Field.create({
 		}
 		window.open(href);
 	},
-	renderLink () {
-		if (!this.props.value) return null;
-
+	renderField () {
+		const { value } = this.props;
 		return (
-			<Button type="link" onClick={this.openValue} className="keystone-relational-button" title={'Open ' + this.props.value + ' in a new tab'}>
-				<span className="octicon octicon-link" />
-			</Button>
-		);
-	},
-	wrapField () {
-		return (
-			<div style={{ position: 'relative' }}>
-				{this.renderField()}
-				{this.renderLink()}
+			<div>
+				<FormInput
+					autoComplete="off"
+					name={this.getInputName(this.props.path)}
+					onChange={this.valueChanged}
+					ref="focusTarget"
+					type="url"
+					value={value}
+				/>
+				{ this.renderThumb() }
 			</div>
 		);
 	},
 	renderValue () {
-		return <FormInput noedit onClick={this.openValue}>{this.props.value}</FormInput>;
-	}
-
+		const { value } = this.props;
+		return (
+			<div>
+				<FormInput noedit onClick={value && this.openValue}>
+					{value}
+				</FormInput>
+				{ this.renderThumb() }
+			</div>
+		);
+	},
+	renderThumb () {
+		const { thumb, value } = this.props;
+		if (thumb === true) {
+			return (
+				<img src={value}/>
+			);
+		}
+		return ('');
+	},
 });

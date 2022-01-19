@@ -1,63 +1,121 @@
-import _ from 'underscore';
 import React from 'react';
+import { findDOMNode } from 'react-dom';
+import {
+	Form,
+	FormField,
+	FormInput,
+	FormSelect,
+	Grid,
+} from '../../../admin/client/App/elemental';
 
-import { FormField, FormInput, FormRow, FormSelect } from 'elemental';
-
-const CONTROL_OPTIONS = [
-	{ label: 'Exactly', value: 'exactly' },
-	{ label: 'Greater Than', value: 'greaterThan' },
-	{ label: 'Less Than', value: 'lessThan' },
-	{ label: 'Between', value: 'between' }
+const MODE_OPTIONS = [
+	{ label: 'Exactly', value: 'equals' },
+	{ label: 'Greater Than', value: 'gt' },
+	{ label: 'Less Than', value: 'lt' },
+	{ label: 'Between', value: 'between' },
 ];
 
-var NumberFilter = React.createClass({
+function getDefaultValue () {
+	return {
+		mode: MODE_OPTIONS[0].value,
+		value: '',
+	};
+}
 
-	getInitialState () {
+var NumberFilter = React.createClass({
+	statics: {
+		getDefaultValue: getDefaultValue,
+	},
+	getDefaultProps () {
 		return {
-			modeValue: CONTROL_OPTIONS[0].value, // 'matches'
-			modeLabel: CONTROL_OPTIONS[0].label, // 'Matches'
-			value: ''
+			filter: getDefaultValue(),
 		};
 	},
 
 	componentDidMount () {
 		// focus the text input
-		React.findDOMNode(this.refs.input).focus();
+		findDOMNode(this.refs.focusTarget).focus();
 	},
 
-	toggleMode (mode) {
-		// TODO: implement w/o underscore
-		this.setState({
-			modeValue: mode,
-			modeLabel: _.findWhere(CONTROL_OPTIONS, { value: mode }).label
-		});
+	handleChangeBuilder (type) {
+		const self = this;
+		return function handleChange (e) {
+			const { filter, onChange } = self.props;
 
-		// focus the text input after a mode selection is made
-		React.findDOMNode(this.refs.input).focus();
+			switch (type) {
+				case 'minValue':
+					onChange({
+						mode: filter.mode,
+						value: {
+							min: e.target.value,
+							max: filter.value.max,
+						},
+					});
+					break;
+				case 'maxValue':
+					onChange({
+						mode: filter.mode,
+						value: {
+							min: filter.value.min,
+							max: e.target.value,
+						},
+					});
+					break;
+				case 'value':
+					onChange({
+						mode: filter.mode,
+						value: e.target.value,
+					});
+			}
+		};
+	},
+	// Update the props with this.props.onChange
+	updateFilter (changedProp) {
+		this.props.onChange({ ...this.props.filter, ...changedProp });
+	},
+	// Update the filter mode
+	selectMode (e) {
+		this.updateFilter({ mode: e.target.value });
+
+		// focus on next tick
+		setTimeout(() => {
+			findDOMNode(this.refs.focusTarget).focus();
+		}, 0);
 	},
 
-	renderControls () {
+	renderControls (mode) {
 		let controls;
-		let { field } = this.props;
-		let { modeLabel, modeValue } = this.state;
-		let placeholder = field.label + ' is ' + modeLabel.toLowerCase() + '...';
+		const { field } = this.props;
+		const placeholder = field.label + ' is ' + mode.label.toLowerCase() + '...';
 
-		if (modeValue === 'between') {
+		if (mode.value === 'between') {
 			controls = (
-				<FormRow>
-					<FormField width="one-half" style={{ marginBottom: 0 }}>
-						<FormInput type="number" ref="input" placeholder="Min." />
-					</FormField>
-					<FormField width="one-half" style={{ marginBottom: 0 }}>
-						<FormInput type="number" placeholder="Max." />
-					</FormField>
-				</FormRow>
+				<Grid.Row xsmall="one-half" gutter={10}>
+					<Grid.Col>
+						<FormInput
+							onChange={this.handleChangeBuilder('minValue')}
+							placeholder="Min."
+							ref="focusTarget"
+							type="number"
+						/>
+					</Grid.Col>
+					<Grid.Col>
+						<FormInput
+							onChange={this.handleChangeBuilder('maxValue')}
+							placeholder="Max."
+							type="number"
+						/>
+					</Grid.Col>
+				</Grid.Row>
 			);
 		} else {
 			controls = (
-				<FormField>
-					<FormInput type="number" ref="input" placeholder={placeholder} />
-				</FormField>
+				<FormInput
+					onChange={this.handleChangeBuilder('value')}
+					placeholder={placeholder}
+					ref="focusTarget"
+					type="number"
+				/>
 			);
 		}
 
@@ -65,15 +123,22 @@ var NumberFilter = React.createClass({
 	},
 
 	render () {
-		let { modeValue } = this.state;
+		const { filter } = this.props;
+		const mode = MODE_OPTIONS.filter(i => i.value === filter.mode)[0];
 
 		return (
-			<div>
-				<FormSelect options={CONTROL_OPTIONS} onChange={this.toggleMode} value={modeValue} />
-				{this.renderControls()}
-			</div>
+			<Form component="div">
+				<FormField>
+					<FormSelect
+						onChange={this.selectMode}
+						options={MODE_OPTIONS}
+						value={mode.value}
+					/>
+				</FormField>
+				{this.renderControls(mode)}
+			</Form>
 		);
-	}
+	},
 
 });
 

@@ -29,3 +29,16 @@ admin/public/styles/auth.css
 admin/public/styles/auth.min.css
 admin/public/styles/keystone.css
 admin/public/styles/keystone.min.css
+reports
+
+test/e2e/drivers/*
+
+package-lock.json
+yarn.lock
+
+# Website dependencies
+website/.cache
+website/public
+
+.vscode
+

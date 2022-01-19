@@ -1,38 +1,47 @@
-import classNames from 'classnames';
 import React from 'react';
 
-import { SegmentedControl } from 'elemental';
+import { SegmentedControl } from '../../../admin/client/App/elemental';
 
-var PasswordFilter = React.createClass({
+const OPTIONS = [
+	{ label: 'Is Set', value: true },
+	{ label: 'Is NOT Set', value: false },
+];
 
-	getInitialState () {
+function getDefaultValue () {
+	return {
+		exists: true,
+	};
+}
+
+var CloudinaryImageFilter = React.createClass({
+	propTypes: {
+		filter: React.PropTypes.shape({
+			exists: React.PropTypes.oneOf(OPTIONS.map(i => i.value)),
+		}),
+	},
+	statics: {
+		getDefaultValue: getDefaultValue,
+	},
+	getDefaultProps () {
 		return {
-			checked: this.props.value || true
+			filter: getDefaultValue(),
 		};
 	},
-
-	toggleChecked (checked) {
-		this.setState({
-			checked: checked
-		});
+	toggleExists (value) {
+		this.props.onChange({ exists: value });
 	},
-
-	renderToggle () {
-		let options = [
-			{ label: 'Is Set', value: true },
-			{ label: 'Is NOT Set', value: false }
-		];
-
-		return <SegmentedControl equalWidthSegments options={options} value={this.state.checked} onChange={this.toggleChecked} />;
-	},
-
 	render () {
-		let { field } = this.props;
-		let { checked } = this.state;
+		const { filter } = this.props;
 
-		return this.renderToggle();
-	}
-
+		return (
+			<SegmentedControl
+				equalWidthSegments
+				onChange={this.toggleExists}
+				options={OPTIONS}
+				value={filter.exists}
+			/>
+		);
+	},
 });
 
-module.exports = PasswordFilter;
+module.exports = CloudinaryImageFilter;
