@@ -1,3 +1,12 @@
+<div align="center">
+  <h1>:warning: Archived :warning:</h1>
+  <p>Keystone classic is not receiving any new updates.</p>
+    <p>We recommend using <a href="https://github.com/keystonejs/keystone" target="_blank">Keystone 6</a> for new projects.</p>
+  <br>
+</div>
+<br>
+
+
 # ![KeystoneJS](http://v3.keystonejs.com/images/logo.svg)
 
 [![Build Status](https://travis-ci.org/keystonejs/keystone.svg?branch=master)](https://travis-ci.org/keystonejs/keystone)
@@ -10,17 +19,13 @@
 
 ## About Keystone
 
-[KeystoneJS](http://keystonejs.com) is a powerful Node.js content management system and web app framework built on the [Express](https://expressjs.com/) web framework and [Mongoose ODM](http://mongoosejs.com). Keystone makes it easy to create sophisticated web sites and apps, and comes with a beautiful auto-generated Admin UI.
+[KeystoneJS](http://v4.keystonejs.com) is a powerful Node.js content management system and web app framework built on the [Express](https://expressjs.com/) web framework and [Mongoose ODM](http://mongoosejs.com). Keystone makes it easy to create sophisticated web sites and apps, and comes with a beautiful auto-generated Admin UI.
 
 Check out our [demo site](http://demo.keystonejs.com) to see it in action.
 
-### Keystone 5
-
-We've been working on a new version of Keystone. If you're starting a new project you might be interested in trying out [Keystone 5](https://github.com/keystonejs/keystone-5/). 
-
 ### Documentation
 
-For Keystone v4 documentation and guides, see [keystonejs.com](https://keystonejs.com).
+For Keystone v4 documentation and guides, see [keystonejs.com](https://v4.keystonejs.com).
 
 For Keystone v0.3 documentation, see [v3.keystonejs.com](https://v3.keystonejs.com).
 
