@@ -1,3 +1,4 @@
+import moment from 'moment';
 import React from 'react';
 import classnames from 'classnames';
 
@@ -36,6 +37,25 @@ const ItemsRow = React.createClass({
 			'ItemList__row--success': this.props.rowAlert.success === itemId,
 			'ItemList__row--failure': this.props.rowAlert.fail === itemId,
 		});
+
+		// <hack>
+        const style = {};
+        if (item.fields.enabled === false) {
+            style.backgroundColor = '#984040';
+        }
+        else if (item.fields.expires !== null && typeof item.fields.expires === 'string') {
+            const expires = moment(item.fields.expires).valueOf(),
+                now = moment().valueOf(),
+                week = 15 * 24 * 60 * 60 * 1000; // 15 days
+            if (expires - now < 0) {
+                style.backgroundColor = '#e17373';
+            }
+            else if (expires - now < week) {
+                style.backgroundColor = '#e1aa73';
+            }
+        }
+        // </hack>
+
 		// item fields
 		var cells = this.props.columns.map((col, i) => {
 			var ColumnType = Columns[col.type] || Columns.__unrecognised__;
@@ -57,7 +77,7 @@ const ItemsRow = React.createClass({
 			));
 		}
 
-		var addRow = (<tr key={'i' + item.id} onClick={this.props.manageMode ? (e) => this.props.checkTableItem(item, e) : null} className={rowClassname}>{cells}</tr>);
+		var addRow = (<tr style={style} key={'i' + item.id} onClick={this.props.manageMode ? (e) => this.props.checkTableItem(item, e) : null} className={rowClassname}>{cells}</tr>);
 
 		if (this.props.list.sortable) {
 			return (
